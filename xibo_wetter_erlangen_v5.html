@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Wetter Erlangen</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:1920px; height:1080px;
+  overflow:hidden;
+  background:#020b18;
+  font-family:'Barlow Condensed',sans-serif;
+  color:#fff;
+}
+
+/* BG */
+.bg {
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 0%, rgba(10,50,120,0.9) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 80% at 0% 50%, rgba(5,25,80,0.6) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 100% 50%, rgba(5,25,80,0.6) 0%, transparent 60%),
+    linear-gradient(180deg, #020c1e 0%, #030f26 60%, #020b18 100%);
+}
+.grid {
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size:96px 96px;
+}
+
+/* STARS */
+.stars {
+  position:fixed; inset:0; overflow:hidden;
+}
+.star {
+  position:absolute;
+  background:#fff;
+  border-radius:50%;
+  animation:twinkle var(--d) ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%,100%{opacity:0.1;} 50%{opacity:0.7;}
+}
+
+/* WRAP */
+.wrap {
+  position:relative; z-index:10;
+  width:1920px; height:1080px;
+  display:flex; flex-direction:column;
+}
+
+/* HEADER */
+.hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:28px 72px 22px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  flex-shrink:0;
+}
+.city {
+  font-size:58px; font-weight:700;
+  letter-spacing:10px; text-transform:uppercase;
+  color:#fff; line-height:1;
+}
+.city-sub {
+  font-size:18px; font-weight:400;
+  letter-spacing:4px; text-transform:uppercase;
+  color:rgba(255,255,255,0.85); margin-left:20px;
+}
+.clk-time {
+  font-size:64px; font-weight:200;
+  letter-spacing:4px; color:#fff; line-height:1;
+  text-align:right;
+}
+.clk-date {
+  font-size:18px; font-weight:300;
+  letter-spacing:3px; text-transform:uppercase;
+  color:rgba(255,255,255,0.35); margin-top:2px;
+  text-align:right;
+}
+
+/* MAIN */
+.main {
+  flex:1;
+  display:grid;
+  grid-template-columns:620px 1fr 1fr;
+  gap:24px;
+  padding:24px 48px;
+  overflow:hidden;
+}
+
+/* GLASS CARD */
+.card {
+  background:rgba(0,10,40,0.55);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:24px;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:28px 36px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+
+/* TODAY CARD */
+.today-card {
+  align-items:flex-start;
+}
+.t-label {
+  font-size:13px; font-weight:500;
+  letter-spacing:5px; text-transform:uppercase;
+  color:rgba(255,255,255,0.3); margin-bottom:10px;
+  align-self:flex-start;
+}
+.t-anim-wrap {
+  width:150px; height:150px;
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 10px;
+  position:relative;
+}
+.t-temp-row {
+  display:flex; align-items:flex-start; line-height:1;
+  align-self:flex-start;
+}
+.t-temp {
+  font-size:130px; font-weight:200; color:#fff; letter-spacing:-4px;
+}
+.t-unit {
+  font-size:46px; font-weight:300;
+  color:rgba(255,255,255,0.35);
+  margin-top:16px; margin-left:4px;
+}
+.t-desc {
+  font-size:24px; font-weight:400;
+  letter-spacing:3px; text-transform:uppercase;
+  color:rgba(255,255,255,0.6); margin-top:4px;
+  align-self:flex-start;
+}
+.t-details {
+  display:grid; grid-template-columns:1fr 1fr 1fr;
+  gap:12px; margin-top:20px; padding-top:18px;
+  border-top:1px solid rgba(255,255,255,0.07);
+  width:100%;
+}
+.det { text-align:center; }
+.det-ico { font-size:18px; margin-bottom:3px; opacity:0.5; }
+.det-lbl {
+  font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  color:rgba(255,255,255,0.7); margin-bottom:2px;
+}
+.det-val { font-size:22px; font-weight:500; color:#fff; }
+
+/* FORECAST CARDS */
+.f-dayname {
+  font-size:22px; font-weight:600;
+  letter-spacing:5px; text-transform:uppercase;
+  color:#fff; margin-bottom:2px;
+}
+.f-date {
+  font-size:15px; font-weight:400;
+  letter-spacing:3px; color:rgba(255,255,255,0.8);
+  margin-bottom:20px;
+}
+.f-anim-wrap {
+  width:110px; height:110px;
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:16px; position:relative;
+}
+.f-temps {
+  display:flex; align-items:center; gap:14px; margin-bottom:8px;
+}
+.f-max { font-size:68px; font-weight:300; color:#fff; line-height:1; letter-spacing:-2px; }
+.f-sep { width:1px; height:46px; background:rgba(255,255,255,0.15); }
+.f-min { font-size:40px; font-weight:200; color:rgba(255,255,255,0.3); line-height:1; }
+.f-tunit { font-size:22px; color:rgba(255,255,255,0.2); align-self:flex-start; margin-top:4px; }
+.f-desc {
+  font-size:16px; font-weight:400;
+  letter-spacing:3px; text-transform:uppercase;
+  color:rgba(255,255,255,0.9); margin-bottom:20px;
+}
+.f-bars { display:flex; flex-direction:column; gap:9px; width:100%; max-width:240px; }
+.f-bar-row { display:flex; align-items:center; gap:8px; }
+.f-bar-lbl {
+  font-size:11px; letter-spacing:1px;
+  color:rgba(255,255,255,0.65); text-transform:uppercase;
+  width:52px; text-align:right;
+}
+.f-bar-track {
+  flex:1; height:3px;
+  background:rgba(255,255,255,0.07); border-radius:2px; overflow:hidden;
+}
+.f-bar-fill {
+  height:100%; border-radius:2px;
+  background:linear-gradient(90deg,rgba(40,100,220,0.5),rgba(80,160,255,0.9));
+  transition:width 1.4s ease;
+}
+.f-bar-val { font-size:12px; color:rgba(255,255,255,0.75); width:46px; }
+
+/* FOOTER */
+.ftr {
+  padding:10px 72px;
+  border-top:1px solid rgba(255,255,255,0.05);
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.ftr-txt {
+  font-size:12px; letter-spacing:2px;
+  color:rgba(255,255,255,0.5); text-transform:uppercase;
+}
+.ftr-dots { display:flex; gap:6px; }
+.ftr-dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.1); }
+.ftr-dot.on { background:rgba(80,160,255,0.55); }
+
+/* ===== WEATHER ANIMATIONS ===== */
+
+/* SUN */
+.sun-anim {
+  width:110px; height:110px; position:relative;
+  animation:sunSpin 12s linear infinite;
+}
+.sun-anim.big { width:140px; height:140px; }
+.sun-core {
+  position:absolute; inset:18%;
+  background:radial-gradient(circle, #ffe066 30%, #ffb300 70%, #ff8c00 100%);
+  border-radius:50%;
+  box-shadow:0 0 30px rgba(255,200,0,0.6), 0 0 60px rgba(255,150,0,0.3);
+}
+.sun-ray {
+  position:absolute; top:50%; left:50%;
+  width:12%; height:40%;
+  background:linear-gradient(#ffcc00, transparent);
+  border-radius:4px;
+  transform-origin:bottom center;
+}
+@keyframes sunSpin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+/* CLOUD */
+.cloud-wrap { position:relative; width:110px; height:80px; }
+.cloud-wrap.big { width:140px; height:100px; }
+.cloud-body {
+  position:absolute; bottom:0; left:10%;
+  width:80%; height:55%;
+  background:rgba(180,200,240,0.85);
+  border-radius:30px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.3);
+}
+.cloud-top1 {
+  position:absolute; bottom:40%; left:20%;
+  width:40%; height:60%;
+  background:rgba(200,215,245,0.9);
+  border-radius:50%;
+}
+.cloud-top2 {
+  position:absolute; bottom:35%; left:40%;
+  width:35%; height:50%;
+  background:rgba(190,210,240,0.85);
+  border-radius:50%;
+}
+.cloud-anim { animation:cloudFloat 4s ease-in-out infinite; }
+@keyframes cloudFloat {
+  0%,100%{transform:translateX(0);} 50%{transform:translateX(8px);}
+}
+
+/* PARTLY CLOUDY */
+.partly-wrap { position:relative; width:110px; height:100px; }
+.partly-wrap.big { width:140px; height:120px; }
+.partly-sun {
+  position:absolute; top:0; right:0;
+  width:65px; height:65px;
+  animation:sunSpin 12s linear infinite;
+}
+.partly-sun.big { width:80px; height:80px; }
+.partly-sun .sun-core { inset:15%; }
+.partly-sun .sun-ray { width:10%; height:35%; }
+.partly-cloud {
+  position:absolute; bottom:0; left:0;
+  width:75px; height:55px;
+}
+.partly-cloud.big { width:90px; height:65px; }
+.partly-cloud .cloud-body { background:rgba(160,185,230,0.9); }
+
+/* RAIN */
+.rain-wrap { position:relative; width:110px; height:110px; }
+.rain-wrap.big { width:140px; height:130px; }
+.rain-cloud { position:absolute; top:0; left:0; right:0; height:60%; }
+.rain-drops { position:absolute; bottom:0; left:10%; right:10%; height:45%; }
+.rain-drop {
+  position:absolute;
+  width:2px; border-radius:2px;
+  background:linear-gradient(rgba(100,160,255,0.8), rgba(100,160,255,0.2));
+  animation:rainFall var(--rd) linear infinite;
+  animation-delay:var(--rdy);
+}
+@keyframes rainFall {
+  0%{transform:translateY(-10px);opacity:0;}
+  20%{opacity:1;}
+  100%{transform:translateY(30px);opacity:0;}
+}
+
+/* SNOW */
+.snow-wrap { position:relative; width:110px; height:110px; }
+.snow-wrap.big { width:140px; height:130px; }
+.snow-cloud { position:absolute; top:0; left:0; right:0; height:55%; }
+.snow-flakes { position:absolute; bottom:0; left:5%; right:5%; height:50%; }
+.snow-flake {
+  position:absolute;
+  color:rgba(200,230,255,0.9);
+  font-size:14px;
+  animation:snowFall var(--sd) ease-in-out infinite;
+  animation-delay:var(--sdy);
+}
+@keyframes snowFall {
+  0%{transform:translateY(-5px) rotate(0deg);opacity:0;}
+  20%{opacity:1;}
+  100%{transform:translateY(25px) rotate(180deg);opacity:0;}
+}
+
+/* STORM */
+.storm-wrap { position:relative; width:110px; height:110px; }
+.storm-wrap.big { width:140px; height:130px; }
+.storm-cloud { position:absolute; top:0; left:0; right:0; height:55%; }
+.lightning {
+  position:absolute; bottom:5%; left:40%;
+  width:0; height:0;
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-top:22px solid rgba(255,220,50,0.9);
+  animation:lightningFlash 2.5s ease-in-out infinite;
+  filter:drop-shadow(0 0 8px rgba(255,220,50,0.8));
+}
+@keyframes lightningFlash {
+  0%,85%,100%{opacity:0;} 87%,93%{opacity:1;} 90%{opacity:0.3;}
+}
+
+/* FOG */
+.fog-wrap { position:relative; width:110px; height:80px; overflow:hidden; }
+.fog-wrap.big { width:140px; height:100px; }
+.fog-line {
+  position:absolute; left:0; right:0;
+  height:8px; border-radius:4px;
+  background:rgba(180,200,220,0.5);
+  animation:fogMove var(--fd) ease-in-out infinite;
+}
+@keyframes fogMove {
+  0%,100%{transform:translateX(0);opacity:0.3;}
+  50%{transform:translateX(10px);opacity:0.7;}
+}
+
+/* FADE IN */
+.fade { animation:fi 0.9s ease forwards; opacity:0; }
+.d1{animation-delay:0.1s;} .d2{animation-delay:0.3s;} .d3{animation-delay:0.5s;}
+@keyframes fi {from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grid"></div>
+<div class="stars" id="stars"></div>
+
+<div class="wrap">
+  <div class="hdr">
+    <div style="display:flex;align-items:baseline;gap:16px;">
+      <div class="city">Erlangen</div>
+      <div class="city-sub">Bayern · Deutschland</div>
+    </div>
+    <div>
+      <div class="clk-time" id="ct">--:--</div>
+      <div class="clk-date" id="cd">---</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- TODAY -->
+    <div class="card today-card fade d1">
+      <div class="t-label">Aktuell</div>
+      <div class="t-anim-wrap" id="ti-wrap">
+        <div style="font-size:100px;line-height:1;" id="ti-fallback">🌤️</div>
+      </div>
+      <div class="t-temp-row">
+        <span class="t-temp" id="tt">--</span>
+        <span class="t-unit">°C</span>
+      </div>
+      <div class="t-desc" id="td">Wird geladen...</div>
+      <div class="t-details">
+        <div class="det"><div class="det-ico">💧</div><div class="det-lbl">Luftf.</div><div class="det-val" id="th">--%</div></div>
+        <div class="det"><div class="det-ico">💨</div><div class="det-lbl">Wind</div><div class="det-val" id="tw">--</div></div>
+        <div class="det"><div class="det-ico">🌡️</div><div class="det-lbl">Gefühlt</div><div class="det-val" id="tf">--°C</div></div>
+      </div>
+    </div>
+
+    <!-- DAY2 -->
+    <div class="card fade d2">
+      <div class="f-dayname" id="d2n">---</div>
+      <div class="f-date" id="d2d">--. ---</div>
+      <div class="f-anim-wrap" id="d2-wrap">
+        <div style="font-size:70px;line-height:1;" id="d2-fallback">🌤️</div>
+      </div>
+      <div class="f-temps">
+        <div class="f-max" id="d2mx">--</div>
+        <div class="f-sep"></div>
+        <div class="f-min" id="d2mn">--</div>
+        <div class="f-tunit">°C</div>
+      </div>
+      <div class="f-desc" id="d2ds">---</div>
+      <div class="f-bars">
+        <div class="f-bar-row"><div class="f-bar-lbl">Regen</div><div class="f-bar-track"><div class="f-bar-fill" id="d2rb" style="width:0"></div></div><div class="f-bar-val" id="d2r">--%</div></div>
+        <div class="f-bar-row"><div class="f-bar-lbl">Wind</div><div class="f-bar-track"><div class="f-bar-fill" id="d2wb" style="width:0"></div></div><div class="f-bar-val" id="d2w">--</div></div>
+        <div class="f-bar-row"><div class="f-bar-lbl">Luftf.</div><div class="f-bar-track"><div class="f-bar-fill" id="d2hb" style="width:0"></div></div><div class="f-bar-val" id="d2h">--%</div></div>
+      </div>
+    </div>
+
+    <!-- DAY3 -->
+    <div class="card fade d3">
+      <div class="f-dayname" id="d3n">---</div>
+      <div class="f-date" id="d3d">--. ---</div>
+      <div class="f-anim-wrap" id="d3-wrap">
+        <div style="font-size:70px;line-height:1;" id="d3-fallback">🌤️</div>
+      </div>
+      <div class="f-temps">
+        <div class="f-max" id="d3mx">--</div>
+        <div class="f-sep"></div>
+        <div class="f-min" id="d3mn">--</div>
+        <div class="f-tunit">°C</div>
+      </div>
+      <div class="f-desc" id="d3ds">---</div>
+      <div class="f-bars">
+        <div class="f-bar-row"><div class="f-bar-lbl">Regen</div><div class="f-bar-track"><div class="f-bar-fill" id="d3rb" style="width:0"></div></div><div class="f-bar-val" id="d3r">--%</div></div>
+        <div class="f-bar-row"><div class="f-bar-lbl">Wind</div><div class="f-bar-track"><div class="f-bar-fill" id="d3wb" style="width:0"></div></div><div class="f-bar-val" id="d3w">--</div></div>
+        <div class="f-bar-row"><div class="f-bar-lbl">Luftf.</div><div class="f-bar-track"><div class="f-bar-fill" id="d3hb" style="width:0"></div></div><div class="f-bar-val" id="d3h">--%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-txt">Wetterdaten: wttr.in · Erlangen, Bayern</div>
+    <div class="ftr-dots"><div class="ftr-dot on"></div><div class="ftr-dot"></div><div class="ftr-dot"></div></div>
+    <div class="ftr-txt" id="fu">--:--</div>
+  </div>
+</div>
+
+<script>
+var DN=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+var MN=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
+/* STARS */
+var sf=document.getElementById('stars');
+for(var i=0;i<80;i++){
+  var s=document.createElement('div');
+  s.className='star';
+  var sz=Math.random()*2+0.5;
+  s.style.cssText='width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*100+'%;left:'+Math.random()*100+'%;--d:'+(2+Math.random()*4)+'s;animation-delay:'+Math.random()*4+'s;';
+  sf.appendChild(s);
+}
+
+/* CLOCK */
+function clk(){
+  var n=new Date();
+  document.getElementById('ct').textContent=('0'+n.getHours()).slice(-2)+':'+('0'+n.getMinutes()).slice(-2);
+  document.getElementById('cd').textContent=DN[n.getDay()]+' · '+n.getDate()+'. '+MN[n.getMonth()]+' '+n.getFullYear();
+}
+clk(); setInterval(clk,1000);
+
+/* ANIMATED ICONS */
+function makeSun(big){
+  var d=document.createElement('div');
+  d.className='sun-anim'+(big?' big':'');
+  var c=document.createElement('div'); c.className='sun-core'; d.appendChild(c);
+  for(var i=0;i<8;i++){
+    var r=document.createElement('div'); r.className='sun-ray';
+    r.style.transform='translateX(-50%) rotate('+(i*45)+'deg) translateY(-130%)';
+    d.appendChild(r);
+  }
+  return d;
+}
+
+function makeCloud(big){
+  var w=document.createElement('div'); w.className='cloud-wrap'+(big?' big':'');
+  w.innerHTML='<div class="cloud-body cloud-anim"></div><div class="cloud-top1 cloud-anim" style="animation-delay:0.5s"></div><div class="cloud-top2 cloud-anim" style="animation-delay:1s"></div>';
+  return w;
+}
+
+function makePartly(big){
+  var w=document.createElement('div'); w.className='partly-wrap'+(big?' big':'');
+  var sun=document.createElement('div'); sun.className='partly-sun'+(big?' big':'');
+  var sc=document.createElement('div'); sc.className='sun-core'; sun.appendChild(sc);
+  for(var i=0;i<8;i++){
+    var r=document.createElement('div'); r.className='sun-ray';
+    r.style.transform='translateX(-50%) rotate('+(i*45)+'deg) translateY(-130%)';
+    sun.appendChild(r);
+  }
+  var cl=document.createElement('div'); cl.className='partly-cloud'+(big?' big':'');
+  cl.innerHTML='<div class="cloud-body cloud-anim"></div><div class="cloud-top1 cloud-anim" style="animation-delay:0.5s"></div><div class="cloud-top2 cloud-anim" style="animation-delay:1s"></div>';
+  w.appendChild(sun); w.appendChild(cl);
+  return w;
+}
+
+function makeRain(big){
+  var w=document.createElement('div'); w.className='rain-wrap'+(big?' big':'');
+  var cl=makeCloud(false); cl.style.cssText='position:absolute;top:0;left:0;right:0;height:60%;';
+  w.appendChild(cl);
+  for(var i=0;i<8;i++){
+    var d=document.createElement('div'); d.className='rain-drop';
+    var h=10+Math.random()*20;
+    d.style.cssText='left:'+(8+i*11)+'%;bottom:5%;height:'+h+'px;--rd:'+(0.6+Math.random()*0.4)+'s;--rdy:'+(Math.random()*0.6)+'s;';
+    w.appendChild(d);
+  }
+  return w;
+}
+
+function makeSnow(big){
+  var w=document.createElement('div'); w.className='snow-wrap'+(big?' big':'');
+  var cl=makeCloud(false); cl.style.cssText='position:absolute;top:0;left:0;right:0;height:55%;';
+  w.appendChild(cl);
+  var flakes=['❄','✼','❅','✦'];
+  for(var i=0;i<6;i++){
+    var f=document.createElement('div'); f.className='snow-flake';
+    f.textContent=flakes[i%flakes.length];
+    f.style.cssText='left:'+(5+i*16)+'%;bottom:5%;--sd:'+(1+Math.random()*0.8)+'s;--sdy:'+(Math.random()*0.8)+'s;';
+    w.appendChild(f);
+  }
+  return w;
+}
+
+function makeStorm(big){
+  var w=document.createElement('div'); w.className='storm-wrap'+(big?' big':'');
+  var cl=makeCloud(false); cl.style.cssText='position:absolute;top:0;left:0;right:0;height:55%;filter:brightness(0.7);';
+  w.appendChild(cl);
+  var rain=makeRain(false); rain.style.cssText='position:absolute;bottom:0;left:0;right:0;height:50%;';
+  w.appendChild(rain);
+  var l=document.createElement('div'); l.className='lightning'; w.appendChild(l);
+  return w;
+}
+
+function makeFog(){
+  var w=document.createElement('div'); w.className='fog-wrap big';
+  w.style.width='130px'; w.style.height='90px';
+  for(var i=0;i<5;i++){
+    var l=document.createElement('div'); l.className='fog-line';
+    l.style.cssText='top:'+(10+i*18)+'%;width:'+(60+Math.random()*40)+'%;left:'+(Math.random()*15)+'%;--fd:'+(2+Math.random()*2)+'s;animation-delay:'+(i*0.4)+'s;';
+    w.appendChild(l);
+  }
+  return w;
+}
+
+function getAnimIcon(code, big){
+  var c=parseInt(code);
+  if(c===113) return makeSun(big);
+  if(c===116) return makePartly(big);
+  if(c>=119&&c<=122) return makeCloud(big);
+  if(c===143||c===248||c===260) return makeFog();
+  if(c>=200&&c<230||c>=386&&c<=395) return makeStorm(big);
+  if(c>=227&&c<=338) return makeSnow(big);
+  if(c>=176&&c<=377) return makeRain(big);
+  return makePartly(big);
+}
+
+function setIcon(wrapId, fallbackId, code, big){
+  var w=document.getElementById(wrapId);
+  var f=document.getElementById(fallbackId);
+  if(f) f.remove();
+  var old=w.querySelector('.sun-anim,.cloud-wrap,.partly-wrap,.rain-wrap,.snow-wrap,.storm-wrap,.fog-wrap');
+  if(old) old.remove();
+  w.appendChild(getAnimIcon(code,big));
+}
+
+function s(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function sb(id,v,mx){var e=document.getElementById(id);if(e)e.style.width=Math.min(100,Math.round(v/mx*100))+'%';}
+function gd(o){return(o.lang_de&&o.lang_de[0])?o.lang_de[0].value:o.weatherDesc[0].value;}
+
+function load(){
+  var x=new XMLHttpRequest();
+  var apiUrl='https://wttr.in/Erlangen?format=j1&lang=de';
+  var proxyUrl='https://api.allorigins.win/get?url='+encodeURIComponent(apiUrl);
+  x.open('GET',proxyUrl,true);
+  x.onload=function(){
+    if(x.status===200){
+      try{
+        var resp=JSON.parse(x.responseText);
+        var data=JSON.parse(resp.contents);
+        var c=data.current_condition[0];
+        var w=data.weather;
+        setIcon('ti-wrap','ti-fallback',c.weatherCode,true);
+        s('tt',c.temp_C); s('td',gd(c));
+        s('th',c.humidity+'%'); s('tw',c.windspeedKmph+' km/h'); s('tf',c.FeelsLikeC+'°C');
+        if(w[1]){
+          var d2=w[1]; var dt2=new Date(d2.date);
+          var h2=d2.hourly[4]||d2.hourly[0];
+          s('d2n',DN[dt2.getDay()]); s('d2d',dt2.getDate()+'. '+MN[dt2.getMonth()]);
+          setIcon('d2-wrap','d2-fallback',h2.weatherCode,false);
+          s('d2mx',d2.maxtempC); s('d2mn',d2.mintempC); s('d2ds',gd(h2));
+          var r2=parseInt(h2.chanceofrain),w2=parseInt(h2.windspeedKmph),h2v=parseInt(h2.humidity);
+          s('d2r',r2+'%'); s('d2w',w2+' km/h'); s('d2h',h2v+'%');
+          sb('d2rb',r2,100); sb('d2wb',w2,100); sb('d2hb',h2v,100);
+        }
+        if(w[2]){
+          var d3=w[2]; var dt3=new Date(d3.date);
+          var h3=d3.hourly[4]||d3.hourly[0];
+          s('d3n',DN[dt3.getDay()]); s('d3d',dt3.getDate()+'. '+MN[dt3.getMonth()]);
+          setIcon('d3-wrap','d3-fallback',h3.weatherCode,false);
+          s('d3mx',d3.maxtempC); s('d3mn',d3.mintempC); s('d3ds',gd(h3));
+          var r3=parseInt(h3.chanceofrain),w3=parseInt(h3.windspeedKmph),h3v=parseInt(h3.humidity);
+          s('d3r',r3+'%'); s('d3w',w3+' km/h'); s('d3h',h3v+'%');
+          sb('d3rb',r3,100); sb('d3wb',w3,100); sb('d3hb',h3v,100);
+        }
+        var n=new Date();
+        s('fu','Akt.: '+('0'+n.getHours()).slice(-2)+':'+('0'+n.getMinutes()).slice(-2));
+      }catch(e){s('td','Fehler');}
+    }
+  };
+  x.onerror=function(){s('td','Keine Verbindung');};
+  x.send();
+}
+load(); setInterval(load,600000);
+</script>
+</body>
+</html>
