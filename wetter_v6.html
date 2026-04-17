@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Wetter Erlangen</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:1920px; height:1080px; overflow:hidden; background:#020b18; font-family:'Barlow Condensed',sans-serif; color:#fff; }
+.bg { position:fixed; inset:0; background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(10,50,120,0.9) 0%, transparent 65%), radial-gradient(ellipse 60% 80% at 0% 50%, rgba(5,25,80,0.6) 0%, transparent 60%), linear-gradient(180deg, #020c1e 0%, #030f26 60%, #020b18 100%); }
+.grid { position:fixed; inset:0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size:96px 96px; }
+.stars { position:fixed; inset:0; overflow:hidden; }
+.star { position:absolute; background:#fff; border-radius:50%; animation:twinkle var(--d) ease-in-out infinite; }
+@keyframes twinkle { 0%,100%{opacity:0.1;} 50%{opacity:0.7;} }
+.wrap { position:relative; z-index:10; width:1920px; height:1080px; display:flex; flex-direction:column; }
+
+/* HEADER */
+.hdr { display:flex; align-items:center; justify-content:space-between; padding:24px 72px 18px; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0; }
+.city { font-size:54px; font-weight:700; letter-spacing:10px; text-transform:uppercase; color:#fff; line-height:1; }
+.city-sub { font-size:18px; font-weight:500; letter-spacing:4px; text-transform:uppercase; color:#fff; margin-left:20px; opacity:0.85; }
+.clk-time { font-size:60px; font-weight:200; letter-spacing:4px; color:#fff; line-height:1; text-align:right; }
+.clk-date { font-size:17px; font-weight:400; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.8); margin-top:2px; text-align:right; }
+
+/* MAIN */
+.main { flex:1; display:grid; grid-template-columns:620px 1fr 1fr; gap:20px; padding:20px 48px 16px; overflow:hidden; }
+
+/* GLASS CARD */
+.card { background:rgba(0,10,40,0.55); border:1px solid rgba(255,255,255,0.15); border-radius:24px; backdrop-filter:blur(20px); display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:28px 36px 20px; position:relative; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1); }
+.card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); }
+
+/* TODAY = same as forecast now */
+.t-dayname { font-size:26px; font-weight:700; letter-spacing:6px; text-transform:uppercase; color:#fff; margin-bottom:2px; align-self:flex-start; }
+.t-date { font-size:16px; font-weight:400; letter-spacing:3px; color:rgba(255,255,255,0.8); margin-bottom:16px; align-self:flex-start; }
+.t-anim-wrap { width:160px; height:160px; display:flex; align-items:center; justify-content:center; margin-bottom:0; position:relative; align-self:flex-start; }
+.t-desc { font-size:26px; font-weight:500; letter-spacing:3px; text-transform:uppercase; color:#fff; margin-top:4px; align-self:flex-start; }
+.t-temp-row { display:flex; align-items:flex-start; line-height:1; align-self:flex-start; margin-top:8px; }
+.t-temp { font-size:110px; font-weight:200; color:#fff; letter-spacing:-4px; }
+.t-unit { font-size:42px; font-weight:300; color:rgba(255,255,255,0.5); margin-top:14px; margin-left:4px; }
+.t-details { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1); width:100%; }
+.det { text-align:center; }
+.det-ico { font-size:16px; margin-bottom:3px; }
+.det-lbl { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.6); margin-bottom:2px; }
+.det-val { font-size:20px; font-weight:500; color:#fff; }
+
+/* FORECAST */
+.f-dayname { font-size:24px; font-weight:700; letter-spacing:6px; text-transform:uppercase; color:#fff; margin-bottom:2px; }
+.f-date { font-size:15px; font-weight:400; letter-spacing:3px; color:rgba(255,255,255,0.8); margin-bottom:16px; }
+.f-anim-wrap { width:120px; height:120px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; position:relative; }
+.f-desc { font-size:17px; font-weight:500; letter-spacing:3px; text-transform:uppercase; color:#fff; margin-bottom:16px; }
+.f-temps { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.f-max { font-size:72px; font-weight:300; color:#fff; line-height:1; letter-spacing:-2px; }
+.f-sep { width:1px; height:50px; background:rgba(255,255,255,0.2); }
+.f-min { font-size:44px; font-weight:200; color:rgba(255,255,255,0.45); line-height:1; }
+.f-tunit { font-size:24px; color:rgba(255,255,255,0.35); align-self:flex-start; margin-top:4px; }
+.f-bars { display:flex; flex-direction:column; gap:9px; width:100%; max-width:260px; }
+.f-bar-row { display:flex; align-items:center; gap:8px; }
+.f-bar-lbl { font-size:11px; letter-spacing:1px; color:rgba(255,255,255,0.65); text-transform:uppercase; width:52px; text-align:right; }
+.f-bar-track { flex:1; height:3px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+.f-bar-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,rgba(40,100,220,0.5),rgba(80,160,255,0.9)); transition:width 1.4s ease; }
+.f-bar-val { font-size:12px; color:rgba(255,255,255,0.75); width:50px; }
+
+/* FOOTER */
+.ftr { padding:10px 72px; border-top:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.ftr-txt { font-size:12px; letter-spacing:2px; color:rgba(255,255,255,0.4); text-transform:uppercase; }
+.ftr-dots { display:flex; gap:6px; }
+.ftr-dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.1); }
+.ftr-dot.on { background:rgba(80,160,255,0.6); }
+
+/* ===== SIMPLE SUN - elegant glow pulse ===== */
+.sun-simple { position:relative; display:flex; align-items:center; justify-content:center; }
+.sun-simple .sun-glow { position:absolute; border-radius:50%; background:radial-gradient(circle, rgba(255,200,0,0.25) 0%, transparent 70%); animation:sunGlow 3s ease-in-out infinite; }
+.sun-simple .sun-body { border-radius:50%; background:radial-gradient(circle, #ffe566 20%, #ffb300 60%, #ff8c00 100%); box-shadow:0 0 20px rgba(255,180,0,0.5); position:relative; z-index:2; }
+@keyframes sunGlow { 0%,100%{transform:scale(1);opacity:0.6;} 50%{transform:scale(1.15);opacity:1;} }
+
+/* CLOUD */
+.cloud-wrap { position:relative; }
+.cloud-body { position:absolute; bottom:0; left:10%; width:80%; height:55%; background:rgba(180,200,240,0.85); border-radius:30px; box-shadow:0 4px 15px rgba(0,0,0,0.3); }
+.cloud-top1 { position:absolute; bottom:40%; left:20%; width:40%; height:60%; background:rgba(200,215,245,0.9); border-radius:50%; }
+.cloud-top2 { position:absolute; bottom:35%; left:40%; width:35%; height:50%; background:rgba(190,210,240,0.85); border-radius:50%; }
+.cloud-float { animation:cloudFloat 5s ease-in-out infinite; }
+@keyframes cloudFloat { 0%,100%{transform:translateX(0);} 50%{transform:translateX(6px);} }
+
+/* PARTLY */
+.partly-wrap { position:relative; }
+.partly-sun-el { position:absolute; top:0; right:0; border-radius:50%; background:radial-gradient(circle, #ffe566 20%, #ffb300 60%, #ff8c00 100%); box-shadow:0 0 15px rgba(255,180,0,0.5); animation:sunGlow 3s ease-in-out infinite; }
+.partly-cloud-el { position:absolute; bottom:0; left:0; }
+.partly-cloud-el .cloud-body { background:rgba(160,185,230,0.9); }
+
+/* RAIN */
+.rain-drop { position:absolute; width:2px; border-radius:2px; background:linear-gradient(rgba(100,160,255,0.8), rgba(100,160,255,0.1)); animation:rainFall var(--rd) linear infinite; animation-delay:var(--rdy); }
+@keyframes rainFall { 0%{transform:translateY(-8px);opacity:0;} 20%{opacity:1;} 100%{transform:translateY(28px);opacity:0;} }
+
+/* SNOW */
+.snow-flake { position:absolute; color:rgba(200,230,255,0.9); animation:snowFall var(--sd) ease-in-out infinite; animation-delay:var(--sdy); }
+@keyframes snowFall { 0%{transform:translateY(-5px) rotate(0deg);opacity:0;} 20%{opacity:1;} 100%{transform:translateY(22px) rotate(180deg);opacity:0;} }
+
+/* STORM */
+.lightning { position:absolute; bottom:5%; left:42%; width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-top:20px solid rgba(255,220,50,0.95); animation:lFlash 2.5s ease-in-out infinite; filter:drop-shadow(0 0 6px rgba(255,220,50,0.9)); }
+@keyframes lFlash { 0%,84%,100%{opacity:0;} 86%,92%{opacity:1;} 89%{opacity:0.2;} }
+
+/* FOG */
+.fog-line { position:absolute; left:0; right:0; height:7px; border-radius:4px; background:rgba(180,200,220,0.45); animation:fogM var(--fd) ease-in-out infinite; }
+@keyframes fogM { 0%,100%{transform:translateX(0);opacity:0.3;} 50%{transform:translateX(8px);opacity:0.65;} }
+
+.fade { animation:fi 0.9s ease forwards; opacity:0; }
+.d1{animation-delay:0.1s;} .d2{animation-delay:0.3s;} .d3{animation-delay:0.5s;}
+@keyframes fi { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grid"></div>
+<div class="stars" id="stars"></div>
+<div class="wrap">
+  <div class="hdr">
+    <div style="display:flex;align-items:baseline;gap:16px;">
+      <div class="city">Erlangen</div>
+      <div class="city-sub">Bayern · Deutschland</div>
+    </div>
+    <div>
+      <div class="clk-time" id="ct">--:--</div>
+      <div class="clk-date" id="cd">---</div>
+    </div>
+  </div>
+  <div class="main">
+    <!-- TODAY -->
+    <div class="card fade d1">
+      <div class="t-dayname" id="d1n">---</div>
+      <div class="t-date" id="d1d">--. ---</div>
+      <div class="t-anim-wrap" id="ti-wrap"><div style="font-size:90px;" id="ti-fb">⏳</div></div>
+      <div class="t-desc" id="td">Wird geladen...</div>
+      <div class="t-temp-row"><span class="t-temp" id="tt">--</span><span class="t-unit">°C</span></div>
+      <div class="t-details">
+        <div class="det"><div class="det-ico">💧</div><div class="det-lbl">Luftf.</div><div class="det-val" id="th">--%</div></div>
+        <div class="det"><div class="det-ico">💨</div><div class="det-lbl">Wind</div><div class="det-val" id="tw">--</div></div>
+        <div class="det"><div class="det-ico">🌡️</div><div class="det-lbl">Gefühlt</div><div class="det-val" id="tf">--</div></div>
+      </div>
+    </div>
+    <!-- DAY2 -->
+    <div class="card fade d2">
+      <div class="f-dayname" id="d2n">---</div>
+      <div class="f-date" id="d2d">--. ---</div>
+      <div class="f-anim-wrap" id="d2-wrap"><div style="font-size:70px;" id="d2-fb">⏳</div></div>
+      <div class="f-desc" id="d2ds">---</div>
+      <div class="f-temps"><div class="f-max" id="d2mx">--</div><div class="f-sep"></div><div class="f-min" id="d2mn">--</div><div class="f-tunit">°C</div></div>
+      <div class="f-bars">
+        <div class="f-bar-row"><div class="f-bar-lbl">Regen</div><div class="f-bar-track"><div class="f-bar-fill" id="d2rb" style="width:0"></div></div><div class="f-bar-val" id="d2r">--%</div></div>
+        <div class="f-bar-row"><div class="f-bar-lbl">Wind</div><div class="f-bar-track"><div class="f-bar-fill" id="d2wb" style="width:0"></div></div><div class="f-bar-val" id="d2w">--</div></div>
+        <div class="f-bar-row"><div class="f-bar-lbl">Luftf.</div><div class="f-bar-track"><div class="f-bar-fill" id="d2hb" style="width:0"></div></div><div class="f-bar-val" id="d2h">--%</div></div>
+      </div>
+    </div>
+    <!-- DAY3 -->
+    <div class="card fade d3">
+      <div class="f-dayname" id="d3n">---</div>
+      <div class="f-date" id="d3d">--. ---</div>
+      <div class="f-anim-wrap" id="d3-wrap"><div style="font-size:70px;" id="d3-fb">⏳</div></div>
+      <div class="f-desc" id="d3ds">---</div>
+      <div class="f-temps"><div class="f-max" id="d3mx">--</div><div class="f-sep"></div><div class="f-min" id="d3mn">--</div><div class="f-tunit">°C</div></div>
+      <div class="f-bars">
+        <div class="f-bar-row"><div class="f-bar-lbl">Regen</div><div class="f-bar-track"><div class="f-bar-fill" id="d3rb" style="width:0"></div></div><div class="f-bar-val" id="d3r">--%</div></div>
+        <div class="f-bar-row"><div class="f-bar-lbl">Wind</div><div class="f-bar-track"><div class="f-bar-fill" id="d3wb" style="width:0"></div></div><div class="f-bar-val" id="d3w">--</div></div>
+        <div class="f-bar-row"><div class="f-bar-lbl">Luftf.</div><div class="f-bar-track"><div class="f-bar-fill" id="d3hb" style="width:0"></div></div><div class="f-bar-val" id="d3h">--%</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ftr">
+    <div class="ftr-txt">Wetterdaten: wttr.in · Erlangen, Bayern</div>
+    <div class="ftr-dots"><div class="ftr-dot on"></div><div class="ftr-dot"></div><div class="ftr-dot"></div></div>
+    <div class="ftr-txt" id="fu">--:--</div>
+  </div>
+</div>
+<script>
+var DN=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+var MN=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
+/* STARS */
+var sf=document.getElementById('stars');
+for(var i=0;i<80;i++){
+  var st=document.createElement('div'); st.className='star';
+  var sz=Math.random()*2+0.5;
+  st.style.cssText='width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*100+'%;left:'+Math.random()*100+'%;--d:'+(2+Math.random()*4)+'s;animation-delay:'+Math.random()*4+'s;';
+  sf.appendChild(st);
+}
+
+/* CLOCK */
+function clk(){
+  var n=new Date();
+  document.getElementById('ct').textContent=('0'+n.getHours()).slice(-2)+':'+('0'+n.getMinutes()).slice(-2);
+  document.getElementById('cd').textContent=DN[n.getDay()]+' · '+n.getDate()+'. '+MN[n.getMonth()]+' '+n.getFullYear();
+}
+clk(); setInterval(clk,1000);
+
+/* SIMPLE ICONS */
+function makeSun(sz){
+  var w=document.createElement('div'); w.className='sun-simple';
+  w.style.cssText='width:'+sz+'px;height:'+sz+'px;';
+  var g=document.createElement('div'); g.className='sun-glow';
+  g.style.cssText='width:'+(sz*1.6)+'px;height:'+(sz*1.6)+'px;top:50%;left:50%;transform:translate(-50%,-50%);';
+  var b=document.createElement('div'); b.className='sun-body';
+  b.style.cssText='width:'+sz+'px;height:'+sz+'px;';
+  w.appendChild(g); w.appendChild(b); return w;
+}
+
+function makeCloud(w,h){
+  var el=document.createElement('div'); el.className='cloud-wrap cloud-float';
+  el.style.cssText='width:'+w+'px;height:'+h+'px;';
+  el.innerHTML='<div class="cloud-body"></div><div class="cloud-top1"></div><div class="cloud-top2"></div>';
+  return el;
+}
+
+function makePartly(sz){
+  var w=document.createElement('div'); w.className='partly-wrap';
+  w.style.cssText='width:'+sz+'px;height:'+sz+'px;position:relative;';
+  var sunSz=Math.round(sz*0.55);
+  var s=document.createElement('div'); s.className='partly-sun-el';
+  s.style.cssText='width:'+sunSz+'px;height:'+sunSz+'px;top:0;right:0;';
+  var cSz=Math.round(sz*0.72);
+  var c=document.createElement('div'); c.className='partly-cloud-el cloud-float';
+  c.style.cssText='width:'+cSz+'px;height:'+Math.round(cSz*0.6)+'px;bottom:0;left:0;position:absolute;';
+  c.innerHTML='<div class="cloud-body" style="background:rgba(160,185,230,0.9)"></div><div class="cloud-top1"></div><div class="cloud-top2"></div>';
+  w.appendChild(s); w.appendChild(c); return w;
+}
+
+function makeRain(sz){
+  var w=document.createElement('div');
+  w.style.cssText='width:'+sz+'px;height:'+sz+'px;position:relative;';
+  var cl=makeCloud(sz,Math.round(sz*0.55)); cl.style.position='absolute'; cl.style.top='0'; cl.style.left='0'; cl.style.right='0';
+  w.appendChild(cl);
+  for(var i=0;i<8;i++){
+    var d=document.createElement('div'); d.className='rain-drop';
+    var h=8+Math.random()*14;
+    d.style.cssText='position:absolute;left:'+(6+i*11)+'%;bottom:4%;height:'+h+'px;--rd:'+(0.5+Math.random()*0.4)+'s;--rdy:'+(Math.random()*0.5)+'s;';
+    w.appendChild(d);
+  }
+  return w;
+}
+
+function makeSnow(sz){
+  var w=document.createElement('div');
+  w.style.cssText='width:'+sz+'px;height:'+sz+'px;position:relative;';
+  var cl=makeCloud(sz,Math.round(sz*0.5)); cl.style.position='absolute'; cl.style.top='0'; cl.style.left='0';
+  w.appendChild(cl);
+  var fl=['❄','✼','❅'];
+  for(var i=0;i<5;i++){
+    var f=document.createElement('div'); f.className='snow-flake';
+    f.style.cssText='position:absolute;font-size:13px;left:'+(6+i*18)+'%;bottom:5%;--sd:'+(0.9+Math.random()*0.7)+'s;--sdy:'+(Math.random()*0.7)+'s;';
+    f.textContent=fl[i%fl.length]; w.appendChild(f);
+  }
+  return w;
+}
+
+function makeStorm(sz){
+  var w=document.createElement('div');
+  w.style.cssText='width:'+sz+'px;height:'+sz+'px;position:relative;';
+  var cl=makeCloud(sz,Math.round(sz*0.5)); cl.style.cssText='position:absolute;top:0;left:0;right:0;filter:brightness(0.6);';
+  w.appendChild(cl);
+  for(var i=0;i<5;i++){
+    var d=document.createElement('div'); d.className='rain-drop';
+    var h=7+Math.random()*10;
+    d.style.cssText='position:absolute;left:'+(8+i*17)+'%;bottom:18%;height:'+h+'px;--rd:'+(0.5+Math.random()*0.4)+'s;--rdy:'+(Math.random()*0.5)+'s;';
+    w.appendChild(d);
+  }
+  var l=document.createElement('div'); l.className='lightning'; w.appendChild(l);
+  return w;
+}
+
+function makeFog(sz){
+  var w=document.createElement('div');
+  w.style.cssText='width:'+sz+'px;height:'+Math.round(sz*0.6)+'px;position:relative;overflow:hidden;';
+  for(var i=0;i<5;i++){
+    var l=document.createElement('div'); l.className='fog-line';
+    l.style.cssText='position:absolute;top:'+(8+i*17)+'%;width:'+(55+Math.random()*40)+'%;left:'+(Math.random()*15)+'%;--fd:'+(2+Math.random()*2)+'s;animation-delay:'+(i*0.4)+'s;';
+    w.appendChild(l);
+  }
+  return w;
+}
+
+function getIcon(code,sz){
+  var c=parseInt(code);
+  if(c===113) return makeSun(sz);
+  if(c===116) return makePartly(sz);
+  if(c>=119&&c<=122) return makeCloud(sz,Math.round(sz*0.65));
+  if(c===143||c===248||c===260) return makeFog(sz);
+  if(c>=200&&c<230||c>=386&&c<=395) return makeStorm(sz);
+  if(c>=227&&c<=338) return makeSnow(sz);
+  if(c>=176&&c<=377) return makeRain(sz);
+  return makePartly(sz);
+}
+
+function setIcon(wrapId,fbId,code,sz){
+  var w=document.getElementById(wrapId);
+  var fb=document.getElementById(fbId);
+  if(fb) fb.remove();
+  var old=w.firstChild;
+  if(old&&old.id!==fbId) old.remove();
+  var ic=getIcon(code,sz); ic.style.position='relative';
+  w.appendChild(ic);
+}
+
+function s(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function sb(id,v,mx){var e=document.getElementById(id);if(e)e.style.width=Math.min(100,Math.round(v/mx*100))+'%';}
+function gd(o){return(o.lang_de&&o.lang_de[0])?o.lang_de[0].value:o.weatherDesc[0].value;}
+
+function load(){
+  var url='https://corsproxy.io/?'+encodeURIComponent('https://wttr.in/Erlangen?format=j1&lang=de');
+  fetch(url)
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var c=data.current_condition[0];
+      var w=data.weather;
+      var now=new Date();
+
+      /* TODAY */
+      s('d1n',DN[now.getDay()]);
+      s('d1d',now.getDate()+'. '+MN[now.getMonth()]);
+      setIcon('ti-wrap','ti-fb',c.weatherCode,130);
+      s('td',gd(c));
+      s('tt',c.temp_C);
+      s('th',c.humidity+'%'); s('tw',c.windspeedKmph+' km/h'); s('tf',c.FeelsLikeC+'°C');
+
+      /* DAY2 */
+      if(w[1]){
+        var d2=w[1]; var dt2=new Date(d2.date);
+        var h2=d2.hourly[4]||d2.hourly[0];
+        s('d2n',DN[dt2.getDay()]); s('d2d',dt2.getDate()+'. '+MN[dt2.getMonth()]);
+        setIcon('d2-wrap','d2-fb',h2.weatherCode,100);
+        s('d2ds',gd(h2));
+        s('d2mx',d2.maxtempC); s('d2mn',d2.mintempC);
+        var r2=parseInt(h2.chanceofrain),w2=parseInt(h2.windspeedKmph),h2v=parseInt(h2.humidity);
+        s('d2r',r2+'%'); s('d2w',w2+' km/h'); s('d2h',h2v+'%');
+        sb('d2rb',r2,100); sb('d2wb',w2,100); sb('d2hb',h2v,100);
+      }
+
+      /* DAY3 */
+      if(w[2]){
+        var d3=w[2]; var dt3=new Date(d3.date);
+        var h3=d3.hourly[4]||d3.hourly[0];
+        s('d3n',DN[dt3.getDay()]); s('d3d',dt3.getDate()+'. '+MN[dt3.getMonth()]);
+        setIcon('d3-wrap','d3-fb',h3.weatherCode,100);
+        s('d3ds',gd(h3));
+        s('d3mx',d3.maxtempC); s('d3mn',d3.mintempC);
+        var r3=parseInt(h3.chanceofrain),w3=parseInt(h3.windspeedKmph),h3v=parseInt(h3.humidity);
+        s('d3r',r3+'%'); s('d3w',w3+' km/h'); s('d3h',h3v+'%');
+        sb('d3rb',r3,100); sb('d3wb',w3,100); sb('d3hb',h3v,100);
+      }
+
+      var n=new Date(); s('fu','Akt.: '+('0'+n.getHours()).slice(-2)+':'+('0'+n.getMinutes()).slice(-2));
+    })
+    .catch(function(e){s('td','Fehler');});
+}
+load(); setInterval(load,600000);
+</script>
+</body>
+</html>
