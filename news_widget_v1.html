@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>News Widget</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:        #050d1a;
+  --blue1:     #0a1628;
+  --blue2:     #0e2040;
+  --accent:    #4a9eff;
+  --accent2:   #1e6abf;
+  --gold:      #c9a84c;
+  --text:      #f0f4ff;
+  --muted:     rgba(240,244,255,0.55);
+  --border:    rgba(74,158,255,0.2);
+  --glass:     rgba(10,22,40,0.75);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+
+/* Background */
+#app{
+  width:1920px;height:1080px;
+  transform-origin:top left;
+  font-family:'Source Sans 3',sans-serif;
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(30,106,191,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(74,158,255,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, rgba(10,32,64,0.8) 0%, transparent 60%),
+    linear-gradient(135deg, #050d1a 0%, #0a1628 50%, #060e1e 100%);
+}
+
+/* Decorative grid lines */
+#app::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(74,158,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74,158,255,0.04) 1px, transparent 1px);
+  background-size:80px 80px;
+  pointer-events:none;
+}
+
+/* ═══════════ HEADER ═══════════ */
+.header{
+  position:absolute;top:0;left:0;right:0;
+  height:100px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 70px;
+  background:linear-gradient(180deg, rgba(5,13,26,0.95) 0%, rgba(5,13,26,0) 100%);
+  border-bottom:1px solid var(--border);
+  z-index:10;
+}
+.header-left{display:flex;align-items:center;gap:20px;}
+.header-icon{
+  width:48px;height:48px;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+  box-shadow:0 4px 20px rgba(74,158,255,0.3);
+}
+.header-title{
+  font-family:'Playfair Display',serif;
+  font-size:42px;font-weight:900;
+  color:var(--text);letter-spacing:2px;
+}
+.header-title span{color:var(--accent);}
+.header-time{
+  font-size:22px;font-weight:300;
+  color:var(--muted);letter-spacing:1px;
+}
+.header-date{
+  font-size:16px;color:rgba(240,244,255,0.35);
+  letter-spacing:2px;text-transform:uppercase;margin-top:2px;
+}
+
+/* ═══════════ SOURCE TABS ═══════════ */
+.source-tabs{
+  position:absolute;top:110px;left:70px;
+  display:flex;gap:12px;z-index:10;
+}
+.tab{
+  padding:8px 22px;border-radius:30px;
+  font-size:14px;font-weight:600;letter-spacing:1px;
+  text-transform:uppercase;cursor:pointer;
+  border:1px solid var(--border);
+  color:var(--muted);background:transparent;
+  transition:all 0.3s;
+}
+.tab.active{
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  border-color:transparent;color:#fff;
+  box-shadow:0 4px 16px rgba(74,158,255,0.35);
+}
+
+/* ═══════════ MAIN CONTENT ═══════════ */
+.main{
+  position:absolute;top:170px;left:0;right:0;bottom:60px;
+  display:flex;
+}
+
+/* LEFT — Big News */
+.news-main{
+  flex:0 0 1100px;
+  padding:30px 60px 30px 70px;
+  display:flex;flex-direction:column;justify-content:center;
+  position:relative;
+}
+.news-image-wrap{
+  width:100%;height:380px;
+  border-radius:20px;overflow:hidden;
+  position:relative;margin-bottom:28px;
+  background:var(--blue2);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.news-image-wrap img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform 8s ease;
+}
+.news-image-wrap:hover img{transform:scale(1.04);}
+.news-image-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(0deg, rgba(5,13,26,0.7) 0%, transparent 50%);
+}
+.news-no-image{
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:80px;opacity:0.3;
+}
+.news-source-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  padding:6px 16px;border-radius:30px;
+  font-size:13px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:#fff;margin-bottom:16px;
+  box-shadow:0 4px 16px rgba(74,158,255,0.3);
+}
+.news-category{
+  font-size:13px;font-weight:600;letter-spacing:3px;
+  text-transform:uppercase;color:var(--gold);margin-bottom:14px;
+}
+.news-title{
+  font-family:'Playfair Display',serif;
+  font-size:44px;font-weight:700;line-height:1.2;
+  color:var(--text);margin-bottom:20px;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.news-desc{
+  font-size:20px;font-weight:300;line-height:1.6;
+  color:var(--muted);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.news-meta{
+  display:flex;align-items:center;gap:20px;margin-top:20px;
+}
+.news-date{font-size:14px;color:rgba(240,244,255,0.35);letter-spacing:1px;}
+
+/* RIGHT — News List */
+.news-list{
+  flex:1;
+  padding:10px 50px 10px 30px;
+  display:flex;flex-direction:column;gap:8px;
+  overflow:hidden;
+  border-left:1px solid var(--border);
+}
+.news-list-title{
+  font-size:13px;font-weight:700;letter-spacing:3px;
+  text-transform:uppercase;color:var(--accent);
+  margin-bottom:10px;padding-bottom:10px;
+  border-bottom:1px solid var(--border);
+}
+.news-item{
+  padding:16px 18px;
+  border-radius:14px;
+  background:rgba(10,22,40,0.5);
+  border:1px solid transparent;
+  cursor:pointer;
+  transition:all 0.3s;
+  flex:1;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.news-item.active{
+  background:rgba(74,158,255,0.1);
+  border-color:rgba(74,158,255,0.3);
+}
+.news-item:hover{background:rgba(74,158,255,0.07);}
+.item-source{
+  font-size:11px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--accent);margin-bottom:6px;
+}
+.item-title{
+  font-size:16px;font-weight:600;line-height:1.35;
+  color:var(--text);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.item-date{font-size:12px;color:rgba(240,244,255,0.3);margin-top:5px;}
+
+/* Progress bar */
+.progress-bar{
+  position:absolute;bottom:0;left:0;
+  height:3px;background:linear-gradient(90deg,var(--accent2),var(--accent));
+  transition:none;box-shadow:0 0 10px rgba(74,158,255,0.5);
+}
+
+/* ═══════════ FOOTER ═══════════ */
+.footer-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  height:28px;
+  background:rgba(5,13,26,0.9);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 70px;
+  z-index:10;
+}
+.footer-dsgvo,.footer-source{
+  font-size:11px;color:rgba(240,244,255,0.4);letter-spacing:0.5px;
+}
+
+/* ═══════════ ERROR OVERLAY ═══════════ */
+#error-overlay{
+  display:none;position:absolute;inset:0;
+  background:rgba(5,13,26,0.95);z-index:999;
+  flex-direction:column;align-items:center;justify-content:center;gap:24px;
+}
+#error-overlay.visible{display:flex;}
+.error-icon{font-size:100px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.93);}}
+.error-title{font-family:'Playfair Display',serif;font-size:52px;color:#fff;letter-spacing:3px;}
+.error-subtitle{font-size:20px;color:var(--muted);}
+.error-countdown{font-family:'Playfair Display',serif;font-size:48px;color:var(--accent);}
+
+/* Animations */
+.fade-in{animation:fadeIn 0.6s ease forwards;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ERROR OVERLAY -->
+  <div id="error-overlay">
+    <div class="error-icon">📡</div>
+    <div class="error-title">Nachrichten nicht verfügbar</div>
+    <div class="error-subtitle">Verbindung wird wiederhergestellt…</div>
+    <div style="font-size:18px;color:var(--accent);letter-spacing:2px;">NEUER VERSUCH IN</div>
+    <div class="error-countdown" id="countdown">60</div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon">📰</div>
+      <div>
+        <div class="header-title">AKTUELLE <span>NACHRICHTEN</span></div>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div class="header-time" id="clock">--:--</div>
+      <div class="header-date" id="dateDisp">--</div>
+    </div>
+  </div>
+
+  <!-- SOURCE TABS -->
+  <div class="source-tabs">
+    <div class="tab active" onclick="switchSource('tagesschau')" id="tab-tagesschau">Tagesschau</div>
+    <div class="tab" onclick="switchSource('spiegel')" id="tab-spiegel">Spiegel</div>
+    <div class="tab" onclick="switchSource('bbc')" id="tab-bbc">BBC</div>
+    <div class="tab" onclick="switchSource('reuters')" id="tab-reuters">Reuters</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- LEFT: Big News -->
+    <div class="news-main" id="newsMain">
+      <div class="news-image-wrap" id="mainImageWrap">
+        <div class="news-no-image">📰</div>
+      </div>
+      <div class="news-source-badge" id="mainSource">Tagesschau</div>
+      <div class="news-title" id="mainTitle">Nachrichten werden geladen…</div>
+      <div class="news-desc" id="mainDesc"></div>
+      <div class="news-meta">
+        <div class="news-date" id="mainDate"></div>
+      </div>
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- RIGHT: List -->
+    <div class="news-list">
+      <div class="news-list-title">Weitere Meldungen</div>
+      <div id="newsList"></div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-bar">
+    <div class="footer-dsgvo">Alle Angaben ohne Gewähr. Keine Haftung für Richtigkeit, Vollständigkeit oder Aktualität der Nachrichten.</div>
+    <div class="footer-source">Quellen: Tagesschau · Spiegel · BBC · Reuters</div>
+  </div>
+
+</div>
+
+<script>
+var DAYS=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+var MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+var allNews = [];
+var currentIndex = 0;
+var currentSource = 'tagesschau';
+var autoTimer = null;
+var progressTimer = null;
+var countdownTimer = null;
+var DISPLAY_DURATION = 8000; // 8 seconds per news
+
+// Clock
+function updateClock(){
+  var n=new Date();
+  document.getElementById('clock').textContent=
+    ('0'+n.getHours()).slice(-2)+':'+('0'+n.getMinutes()).slice(-2)+':'+('0'+n.getSeconds()).slice(-2);
+  document.getElementById('dateDisp').textContent=
+    DAYS[n.getDay()]+', '+n.getDate()+'. '+MONTHS[n.getMonth()]+' '+n.getFullYear();
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// Error overlay
+function showError(){
+  document.getElementById('error-overlay').classList.add('visible');
+  var secs=60;
+  document.getElementById('countdown').textContent=secs;
+  if(countdownTimer) clearInterval(countdownTimer);
+  countdownTimer=setInterval(function(){
+    secs--;
+    document.getElementById('countdown').textContent=secs;
+    if(secs<=0){ clearInterval(countdownTimer); hideError(); loadNews(currentSource); }
+  },1000);
+}
+function hideError(){
+  document.getElementById('error-overlay').classList.remove('visible');
+  if(countdownTimer) clearInterval(countdownTimer);
+}
+
+// Format date
+function formatDate(dateStr){
+  if(!dateStr) return '';
+  try{
+    var d=new Date(dateStr);
+    return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear()+
+      ' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+' Uhr';
+  }catch(e){ return dateStr; }
+}
+
+// Render main news
+function showNews(index){
+  if(!allNews.length) return;
+  currentIndex = (index + allNews.length) % allNews.length;
+  var n = allNews[currentIndex];
+
+  // Image
+  var wrap = document.getElementById('mainImageWrap');
+  if(n.image){
+    wrap.innerHTML='<img src="'+n.image+'" onerror="this.parentNode.innerHTML=\'<div class=news-no-image>📰</div>\'" alt=""><div class="news-image-overlay"></div>';
+  } else {
+    wrap.innerHTML='<div class="news-no-image">📰</div>';
+  }
+
+  document.getElementById('mainSource').textContent = n.source || currentSource;
+  document.getElementById('mainTitle').textContent = n.title || '';
+  document.getElementById('mainDesc').textContent = n.desc || '';
+  document.getElementById('mainDate').textContent = formatDate(n.pubDate);
+
+  // Highlight in list
+  document.querySelectorAll('.news-item').forEach(function(el,i){
+    el.classList.toggle('active', i===currentIndex);
+  });
+
+  // Fade animation
+  var main = document.getElementById('newsMain');
+  main.classList.remove('fade-in');
+  void main.offsetWidth;
+  main.classList.add('fade-in');
+
+  // Progress bar
+  startProgress();
+}
+
+// Progress bar animation
+function startProgress(){
+  var bar = document.getElementById('progressBar');
+  bar.style.transition='none';
+  bar.style.width='0%';
+  setTimeout(function(){
+    bar.style.transition='width '+DISPLAY_DURATION+'ms linear';
+    bar.style.width='100%';
+  },50);
+}
+
+// Auto advance
+function startAuto(){
+  if(autoTimer) clearInterval(autoTimer);
+  autoTimer = setInterval(function(){
+    showNews(currentIndex+1);
+  }, DISPLAY_DURATION);
+}
+
+// Render list
+function renderList(){
+  var list = document.getElementById('newsList');
+  list.innerHTML='';
+  allNews.forEach(function(n,i){
+    var item=document.createElement('div');
+    item.className='news-item'+(i===currentIndex?' active':'');
+    item.innerHTML=
+      '<div class="item-source">'+( n.source||currentSource)+'</div>'+
+      '<div class="item-title">'+n.title+'</div>'+
+      '<div class="item-date">'+formatDate(n.pubDate)+'</div>';
+    item.onclick=(function(idx){ return function(){ showNews(idx); startAuto(); }; })(i);
+    list.appendChild(item);
+  });
+}
+
+// Load news from proxy
+function loadNews(source){
+  fetch('https://eumatec-germany.de/news-proxy.php?source='+source)
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(data){
+      hideError();
+      if(!data.items || !data.items.length) throw new Error('Keine Meldungen');
+      allNews = data.items;
+      currentIndex = 0;
+      renderList();
+      showNews(0);
+      startAuto();
+    })
+    .catch(function(e){ console.error(e); showError(); });
+}
+
+// Switch source tab
+function switchSource(src){
+  currentSource = src;
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-'+src).classList.add('active');
+  if(autoTimer) clearInterval(autoTimer);
+  loadNews(src);
+}
+
+// Scale
+function scale(){
+  var s=Math.min(window.innerWidth/1920,window.innerHeight/1080);
+  document.getElementById('app').style.transform='scale('+s+')';
+}
+window.addEventListener('resize',scale);
+scale();
+
+// Start
+loadNews('tagesschau');
+
+// Reload every 10 minutes
+setInterval(function(){ loadNews(currentSource); }, 600000);
+</script>
+</body>
+</html>
