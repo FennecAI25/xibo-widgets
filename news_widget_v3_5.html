@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>News</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --blue-dark: #071525;
+  --blue-mid:  #0d2340;
+  --blue:      #1a4a8a;
+  --accent:    #2e7dd1;
+  --light:     #5aa3f0;
+  --gold:      #f0b429;
+  --text:      #ffffff;
+  --muted:     rgba(255,255,255,0.65);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;}
+
+#app{
+  width:1920px;height:1080px;
+  transform-origin:top left;
+  position:relative;overflow:hidden;
+  font-family:'Barlow',sans-serif;
+  background:var(--blue-dark);
+}
+
+/* ── BACKGROUND IMAGE ── */
+#bg{
+  position:absolute;inset:0;z-index:0;
+  background-size:cover;background-position:center;
+  transition:opacity 1s ease;
+}
+/* Gradient overlay — left heavy for text */
+#bg::after{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to right,
+      rgba(7,21,37,0.97) 0%,
+      rgba(7,21,37,0.88) 42%,
+      rgba(7,21,37,0.45) 70%,
+      rgba(7,21,37,0.15) 100%),
+    linear-gradient(to top,
+      rgba(7,21,37,0.6) 0%,
+      transparent 35%);
+}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:absolute;top:0;left:0;right:0;height:80px;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 60px;
+  background:linear-gradient(180deg, rgba(7,21,37,0.98) 0%, rgba(7,21,37,0.0) 100%);
+  border-bottom:2px solid var(--accent);
+}
+.topbar-date{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px;font-weight:600;color:var(--muted);letter-spacing:2px;
+}
+.topbar-logo{
+  display:flex;align-items:center;gap:14px;
+}
+.logo-box{
+  background:var(--accent);
+  padding:6px 16px;border-radius:6px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:32px;font-weight:900;color:#fff;letter-spacing:1px;
+}
+.logo-text{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:32px;font-weight:400;color:var(--text);letter-spacing:3px;
+  text-transform:uppercase;
+}
+.topbar-time{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px;font-weight:600;color:var(--text);letter-spacing:3px;
+}
+
+/* ── SOURCE PILL ── */
+.source-pill{
+  position:absolute;top:95px;left:60px;z-index:20;
+  display:flex;align-items:center;gap:8px;
+  background:var(--accent);
+  padding:6px 20px;border-radius:4px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff;
+  box-shadow:0 4px 20px rgba(46,125,209,0.4);
+}
+
+/* ── MAIN TEXT BLOCK (bottom left) ── */
+.text-block{
+  position:absolute;
+  left:60px;right:420px;bottom:280px;
+  z-index:20;
+}
+.news-category{
+  font-family:'Barlow',sans-serif;
+  font-size:24px;font-weight:700;letter-spacing:4px;
+  text-transform:uppercase;color:var(--gold);
+  margin-bottom:14px;
+}
+.news-title{
+  font-family:'Barlow',sans-serif;
+  font-size:79px;font-weight:800;line-height:1.1;
+  color:#ffffff;margin-bottom:20px;
+  text-shadow:0 2px 30px rgba(0,0,0,0.7);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  letter-spacing:-0.3px;
+}
+.news-desc{
+  font-size:26px;font-weight:400;line-height:1.55;
+  color:#ffffff;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  max-width:820px;
+  text-shadow:0 1px 16px rgba(0,0,0,0.85);
+}
+.news-meta{
+  margin-top:18px;display:flex;align-items:center;gap:16px;
+}
+.news-date{font-size:15px;color:rgba(255,255,255,0.35);letter-spacing:1px;}
+.ai-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(46,125,209,0.2);border:1px solid rgba(46,125,209,0.4);
+  padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--light);
+}
+
+/* ── PROGRESS & COUNTER ── */
+.bottom-bar{
+  position:absolute;bottom:0;left:0;right:0;height:48px;z-index:20;
+  background:rgba(7,21,37,0.95);border-top:1px solid rgba(46,125,209,0.3);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 60px;
+}
+.bottom-dsgvo{font-size:11px;color:rgba(255,255,255,0.3);}
+.bottom-right{display:flex;align-items:center;gap:20px;}
+.bottom-counter{font-family:'Barlow Condensed',sans-serif;font-size:16px;color:rgba(255,255,255,0.4);letter-spacing:1px;}
+
+.progress-track{
+  position:absolute;bottom:48px;left:0;right:0;height:3px;z-index:20;
+  background:rgba(46,125,209,0.15);
+}
+.progress-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--blue),var(--accent),var(--light));
+  box-shadow:0 0 12px rgba(90,163,240,0.6);
+}
+
+/* ── DOTS ── */
+.dots{
+  position:absolute;bottom:56px;right:60px;z-index:20;
+  display:flex;gap:8px;
+}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.3s;}
+.dot.active{background:var(--accent);box-shadow:0 0 8px rgba(46,125,209,0.6);}
+
+/* ── RIGHT SIDE: next articles panel ── */
+.right-panel{
+  position:absolute;top:80px;right:0;bottom:51px;width:380px;z-index:15;
+  background:linear-gradient(to left, rgba(7,21,37,0.92) 0%, rgba(7,21,37,0.7) 100%);
+  border-left:1px solid rgba(46,125,209,0.2);
+  display:flex;flex-direction:column;padding:20px 0;
+  overflow:hidden;
+}
+.panel-label{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:var(--accent);padding:0 24px 12px;
+  border-bottom:1px solid rgba(46,125,209,0.2);margin-bottom:8px;
+}
+.panel-item{
+  padding:14px 24px;cursor:pointer;border-left:3px solid transparent;
+  transition:all 0.25s;flex:1;display:flex;flex-direction:column;justify-content:center;
+}
+.panel-item.active{border-left-color:var(--accent);background:rgba(46,125,209,0.1);}
+.panel-item:hover{background:rgba(46,125,209,0.07);}
+.pi-source{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:5px;}
+.pi-title{font-size:15px;font-weight:500;color:var(--text);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pi-date{font-size:11px;color:rgba(255,255,255,0.3);margin-top:4px;}
+
+/* ── ERROR ── */
+#error-overlay{
+  display:none;position:absolute;inset:0;z-index:999;
+  background:rgba(7,21,37,0.97);
+  flex-direction:column;align-items:center;justify-content:center;gap:20px;
+}
+#error-overlay.visible{display:flex;}
+.err-icon{font-size:80px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.95);}}
+.err-title{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;color:#fff;}
+.err-sub{font-size:18px;color:var(--muted);}
+.err-cd{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:700;color:var(--accent);}
+
+/* Animations */
+.slide-up{animation:slideUp 0.6s ease forwards;}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- BACKGROUND -->
+  <div id="bg"></div>
+
+  <!-- ERROR -->
+  <div id="error-overlay">
+    <div class="err-icon">📡</div>
+    <div class="err-title">Nachrichten nicht verfügbar</div>
+    <div class="err-sub">Verbindung wird wiederhergestellt…</div>
+    <div style="font-size:16px;color:var(--accent);letter-spacing:2px;font-weight:700;">NEUER VERSUCH IN</div>
+    <div class="err-cd" id="countdown">60</div>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-date" id="topDate">--.--.----</div>
+    <div class="topbar-logo">
+      <div class="logo-box">NEWS</div>
+      <div class="logo-text">Aktuell</div>
+    </div>
+    <div class="topbar-time" id="topTime">--:--:--</div>
+  </div>
+
+  <!-- SOURCE PILL -->
+  <div class="source-pill" id="sourcePill">📰 Nachrichten</div>
+
+  <!-- TEXT BLOCK -->
+  <div class="text-block slide-up" id="textBlock">
+    <div class="news-category" id="newsCategory">AKTUELL</div>
+    <div class="news-title" id="newsTitle">Nachrichten werden geladen…</div>
+    <div class="news-desc" id="newsDesc"></div>
+    <div class="news-meta">
+      <div class="news-date" id="newsDate"></div>
+      <div class="ai-badge" id="aiBadge" style="display:none;">✦ KI-Zusammenfassung</div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="panel-label">Weitere Meldungen</div>
+    <div id="panelList"></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-track"><div class="progress-fill" id="pbar"></div></div>
+
+  <!-- DOTS -->
+  <div class="dots" id="dots"></div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <div class="bottom-dsgvo">Alle Angaben ohne Gewähr · Quellen: Tagesschau · Spiegel · BBC · Reuters</div>
+    <div class="bottom-right">
+      <div class="bottom-counter" id="counter">1 / 5</div>
+    </div>
+  </div>
+
+</div>
+<script>
+var DAYS   = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+var MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+var MONTHS_SHORT = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
+var news=[], cur=0, autoTimer=null, cdTimer=null;
+var DURATION = 10000;
+
+// ── CLOCK ──
+function tick(){
+  var n=new Date();
+  var d=('0'+n.getDate()).slice(-2)+'.'+('0'+(n.getMonth()+1)).slice(-2)+'.'+n.getFullYear();
+  document.getElementById('topDate').textContent=DAYS[n.getDay()]+', '+d;
+  document.getElementById('topTime').textContent=('0'+n.getHours()).slice(-2)+':'+('0'+n.getMinutes()).slice(-2)+':'+('0'+n.getSeconds()).slice(-2);
+}
+setInterval(tick,1000); tick();
+
+// ── FORMAT DATE ──
+function fmtDate(s){
+  if(!s) return '';
+  try{
+    var d=new Date(s);
+    return ('0'+d.getDate()).slice(-2)+'. '+MONTHS_SHORT[d.getMonth()]+' '+d.getFullYear()+' · '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+' Uhr';
+  }catch(e){return s;}
+}
+
+// ── ERROR ──
+function showError(){
+  document.getElementById('error-overlay').classList.add('visible');
+  var s=60; document.getElementById('countdown').textContent=s;
+  if(cdTimer) clearInterval(cdTimer);
+  cdTimer=setInterval(function(){ s--; document.getElementById('countdown').textContent=s; if(s<=0){clearInterval(cdTimer);hideError();loadNews();} },1000);
+}
+function hideError(){ document.getElementById('error-overlay').classList.remove('visible'); if(cdTimer) clearInterval(cdTimer); }
+
+// ── RENDER DOTS ──
+function renderDots(){
+  var el=document.getElementById('dots'); el.innerHTML='';
+  news.forEach(function(_,i){
+    var d=document.createElement('div');
+    d.className='dot'+(i===cur?' active':'');
+    d.onclick=(function(x){return function(){show(x);startAuto();};})(i);
+    el.appendChild(d);
+  });
+}
+
+// ── RENDER PANEL ──
+function renderPanel(){
+  var el=document.getElementById('panelList'); el.innerHTML='';
+  news.forEach(function(n,i){
+    var item=document.createElement('div');
+    item.className='panel-item'+(i===cur?' active':'');
+    item.innerHTML='<div class="pi-source">'+(n.flag||'')+'&nbsp;'+n.source+'</div>'+
+      '<div class="pi-title">'+n.title+'</div>'+
+      '<div class="pi-date">'+fmtDate(n.pubDate)+'</div>';
+    item.onclick=(function(x){return function(){show(x);startAuto();};})(i);
+    el.appendChild(item);
+  });
+}
+
+// ── SHOW ARTICLE ──
+function show(index){
+  if(!news.length) return;
+  cur=(index+news.length)%news.length;
+  var n=news[cur];
+
+  // BG
+  var bg=document.getElementById('bg');
+  if(n.image){
+    bg.style.backgroundImage='url("'+n.image+'")';
+    bg.style.opacity='1';
+  } else {
+    bg.style.backgroundImage='none';
+    bg.style.opacity='0';
+  }
+
+  // Source pill
+  document.getElementById('sourcePill').textContent=(n.flag||'📰')+' '+n.source;
+
+  // Category
+  var cats={'Tagesschau':'POLITIK & GESELLSCHAFT','Spiegel':'NACHRICHTEN','BBC News':'INTERNATIONAL','Reuters':'WELTNACHRICHTEN'};
+  document.getElementById('newsCategory').textContent=cats[n.source]||'AKTUELL';
+
+  // Text
+  document.getElementById('newsTitle').textContent=n.title||'';
+  document.getElementById('newsDesc').textContent=n.desc||'';
+  document.getElementById('newsDate').textContent=fmtDate(n.pubDate);
+
+  // AI badge
+  document.getElementById('aiBadge').style.display=n.ai?'inline-flex':'none';
+
+  // Counter
+  document.getElementById('counter').textContent=(cur+1)+' / '+news.length;
+
+  // Panel + Dots
+  renderPanel();
+  renderDots();
+
+  // Animation
+  var tb=document.getElementById('textBlock');
+  tb.classList.remove('slide-up'); void tb.offsetWidth; tb.classList.add('slide-up');
+
+  // Progress
+  var bar=document.getElementById('pbar');
+  bar.style.transition='none'; bar.style.width='0%';
+  setTimeout(function(){ bar.style.transition='width '+DURATION+'ms linear'; bar.style.width='100%'; },60);
+}
+
+function startAuto(){
+  if(autoTimer) clearInterval(autoTimer);
+  autoTimer=setInterval(function(){
+    var next=cur+1;
+    if(next>=news.length){
+      clearInterval(autoTimer);
+      var app=document.getElementById('app');
+      app.style.transition='opacity 1s ease';
+      app.style.opacity='0';
+    } else {
+      show(next);
+    }
+  },DURATION);
+}
+
+// ── LOAD ──
+function loadNews(){
+  fetch('https://eumatec-germany.de/news-proxy.php')
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(data){
+      hideError();
+      if(!data.items||!data.items.length) throw new Error('empty');
+      news=data.items; cur=0;
+      show(0); startAuto();
+    })
+    .catch(function(e){ console.error(e); showError(); });
+}
+
+function scale(){
+  var s=Math.min(window.innerWidth/1920,window.innerHeight/1080);
+  document.getElementById('app').style.transform='scale('+s+')';
+}
+window.addEventListener('resize',scale); scale();
+
+loadNews();
+setInterval(loadNews,600000);
+</script>
+</body>
+</html>
