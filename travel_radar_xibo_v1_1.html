@@ -317,19 +317,15 @@
     max-width:420px;
   }
 
-  .progress-track{
-    position:absolute; bottom:70px; left:50px; z-index:3;
-    display:flex; gap:8px; width:360px; max-width:60%;
+  .countdown-bar{
+    position:absolute; left:0; right:0; bottom:0; z-index:8;
+    height:6px;
+    background:rgba(246,243,236,0.18);
   }
-  .progress-track .seg{
-    flex:1; height:5px; border-radius:3px;
-    background:rgba(246,243,236,0.28);
-    overflow:hidden;
-  }
-  .progress-track .seg .fill{
+  .countdown-bar .fill{
     display:block; height:100%; width:0%;
-    background:rgba(255,107,74,0.75); /* transparente Farbe, gut sichtbar aber dezent */
-    border-radius:3px;
+    background: linear-gradient(90deg, var(--coral), var(--gold));
+    box-shadow: 0 0 10px rgba(255,107,74,0.7); /* helle, gut sichtbare Farbe wie beim News-Widget */
   }
 
   /* ============================================================
@@ -375,7 +371,7 @@
     .ring-label .txt{ font-size:8px; }
     .wowmeter .caption{ text-align:left; max-width:220px; }
 
-    .progress-track{ position:static; margin:14px 22px 0; width:auto; max-width:none; }
+    
 
     .sidebar{ flex:none; width:100%; padding:24px 20px; }
     .deal-card{ padding:12px; }
@@ -428,7 +424,7 @@
       <div class="hero-scene" id="heroScene"></div>
       <div class="hero-overlay"></div>
 
-      <div class="progress-track" id="progressTrack"></div>
+      
 
       <div class="hero-content">
         <div class="hero-left">
@@ -490,6 +486,7 @@
     </div>
   </div>
 
+  <div class="countdown-bar" id="countdownBar"><span class="fill" id="countdownFill"></span></div>
 </div>
 </div>
 
@@ -749,24 +746,17 @@ function renderCards(){
 // macht diese Dauer sichtbar, damit niemand denkt, das Widget hängt.
 const DEAL_DURATION_MS = 20000;
 
-function renderProgressTrack(){
-  const wrap = document.getElementById('progressTrack');
-  wrap.innerHTML = deals.map((_,i)=>`<div class="seg" data-i="${i}"><span class="fill"></span></div>`).join('');
-}
-
-function startProgressTimer(i){
-  const segs = document.querySelectorAll('#progressTrack .seg');
-  segs.forEach((seg, idx) => {
-    const fill = seg.querySelector('.fill');
-    if (!fill) return;
-    fill.style.transition = 'none';
-    fill.style.width = idx < i ? '100%' : '0%'; // bereits gezeigt = voll, kommend = leer
-  });
-  const activeFill = segs[i] && segs[i].querySelector('.fill');
-  if (!activeFill) return;
-  void activeFill.offsetWidth; // Reflow erzwingen, damit die Transition sauber neu startet
-  activeFill.style.transition = `width ${DEAL_DURATION_MS}ms linear`;
-  requestAnimationFrame(() => { activeFill.style.width = '100%'; });
+function startCountdown(){
+  // Ein einzelner, heller Balken über die volle Breite ganz unten am
+  // Bildschirmrand (wie beim News-Widget) — füllt sich über die volle
+  // Anzeigedauer und springt beim nächsten Angebot zurück auf 0.
+  const fill = document.getElementById('countdownFill');
+  if (!fill) return;
+  fill.style.transition = 'none';
+  fill.style.width = '0%';
+  void fill.offsetWidth; // Reflow erzwingen, damit die Transition sauber neu startet
+  fill.style.transition = `width ${DEAL_DURATION_MS}ms linear`;
+  requestAnimationFrame(() => { fill.style.width = '100%'; });
 }
 
 function renderTicker(i){
@@ -848,8 +838,7 @@ function showDeal(i){
   updateQR(d.link);
 
   renderCards();
-  renderProgressTrack();
-  startProgressTimer(i);
+  startCountdown();
   renderTicker(i);
 }
 
