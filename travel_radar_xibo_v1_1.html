@@ -317,16 +317,20 @@
     max-width:420px;
   }
 
-  .progress-dots{
+  .progress-track{
     position:absolute; bottom:70px; left:50px; z-index:3;
-    display:flex; gap:8px;
+    display:flex; gap:8px; width:360px; max-width:60%;
   }
-  .progress-dots .dot{
-    width:7px; height:7px; border-radius:50%;
-    background:rgba(246,243,236,0.3);
-    transition: all 0.4s ease;
+  .progress-track .seg{
+    flex:1; height:5px; border-radius:3px;
+    background:rgba(246,243,236,0.28);
+    overflow:hidden;
   }
-  .progress-dots .dot.on{ background:var(--coral); width:22px; border-radius:4px; }
+  .progress-track .seg .fill{
+    display:block; height:100%; width:0%;
+    background:rgba(255,107,74,0.75); /* transparente Farbe, gut sichtbar aber dezent */
+    border-radius:3px;
+  }
 
   /* ============================================================
      RESPONSIVE — Tablet & Mobile
@@ -371,7 +375,7 @@
     .ring-label .txt{ font-size:8px; }
     .wowmeter .caption{ text-align:left; max-width:220px; }
 
-    .progress-dots{ position:static; margin:14px 22px 0; }
+    .progress-track{ position:static; margin:14px 22px 0; width:auto; max-width:none; }
 
     .sidebar{ flex:none; width:100%; padding:24px 20px; }
     .deal-card{ padding:12px; }
@@ -424,7 +428,7 @@
       <div class="hero-scene" id="heroScene"></div>
       <div class="hero-overlay"></div>
 
-      <div class="progress-dots" id="progressDots"></div>
+      <div class="progress-track" id="progressTrack"></div>
 
       <div class="hero-content">
         <div class="hero-left">
@@ -740,9 +744,29 @@ function renderCards(){
   `).join('');
 }
 
-function renderDots(){
-  const wrap = document.getElementById('progressDots');
-  wrap.innerHTML = deals.map((_,i)=>`<div class="dot ${i===activeIndex?'on':''}"></div>`).join('');
+// Feste Anzeigedauer je Angebot (10-20s laut Vorgabe) — muss zum
+// setInterval(nextDeal, ...) weiter unten passen. Die Fortschrittsleiste
+// macht diese Dauer sichtbar, damit niemand denkt, das Widget hängt.
+const DEAL_DURATION_MS = 20000;
+
+function renderProgressTrack(){
+  const wrap = document.getElementById('progressTrack');
+  wrap.innerHTML = deals.map((_,i)=>`<div class="seg" data-i="${i}"><span class="fill"></span></div>`).join('');
+}
+
+function startProgressTimer(i){
+  const segs = document.querySelectorAll('#progressTrack .seg');
+  segs.forEach((seg, idx) => {
+    const fill = seg.querySelector('.fill');
+    if (!fill) return;
+    fill.style.transition = 'none';
+    fill.style.width = idx < i ? '100%' : '0%'; // bereits gezeigt = voll, kommend = leer
+  });
+  const activeFill = segs[i] && segs[i].querySelector('.fill');
+  if (!activeFill) return;
+  void activeFill.offsetWidth; // Reflow erzwingen, damit die Transition sauber neu startet
+  activeFill.style.transition = `width ${DEAL_DURATION_MS}ms linear`;
+  requestAnimationFrame(() => { activeFill.style.width = '100%'; });
 }
 
 function renderTicker(i){
@@ -824,7 +848,8 @@ function showDeal(i){
   updateQR(d.link);
 
   renderCards();
-  renderDots();
+  renderProgressTrack();
+  startProgressTimer(i);
   renderTicker(i);
 }
 
@@ -872,7 +897,30 @@ function pickNextBatch(){
     seenDestinations.clear();
     fresh = dealPool.slice();
   }
-  const batch = fresh.slice(0, BATCH_SIZE);
+
+  // Ziel: 4 Langstrecke + 3 Europa je Rotationsblock (wie im Web-Widget),
+  // verschachtelt angeordnet — sonst verschwindet Langstrecke nach ein
+  // paar Sekunden wieder hinter lauter Europa-Zielen. Das "region"-Feld
+  // kommt direkt vom Proxy (reise-proxy.php).
+  const LH_TARGET = 4, EU_TARGET = 3;
+  const lh = fresh.filter(d => d.region === 'langstrecke').slice(0, LH_TARGET);
+  const eu = fresh.filter(d => d.region !== 'langstrecke').slice(0, EU_TARGET);
+
+  let batch = [];
+  let li = 0, ei = 0;
+  ['lh','eu','lh','eu','lh','eu','lh'].forEach(slot => {
+    if (slot === 'lh' && lh[li]) { batch.push(lh[li]); li++; }
+    else if (slot === 'eu' && eu[ei]) { batch.push(eu[ei]); ei++; }
+  });
+
+  // Lücken (z.B. zu wenig frische Langstrecke übrig) aus dem restlichen
+  // frischen Pool auffüllen, damit der Block immer BATCH_SIZE Ziele hat.
+  if (batch.length < BATCH_SIZE){
+    const used = new Set(batch.map(d => d.destination));
+    const rest = fresh.filter(d => !used.has(d.destination));
+    batch = batch.concat(rest.slice(0, BATCH_SIZE - batch.length));
+  }
+
   batch.forEach(d => seenDestinations.add(d.destination));
   return batch;
 }
@@ -910,7 +958,7 @@ showDeal(0);
 updateClock();
 loadDeals();
 setInterval(updateClock, 1000);
-setInterval(nextDeal, 20000); // alle 20 Sekunden nächster Deal (bewusst ruhiger)
+setInterval(nextDeal, DEAL_DURATION_MS); // Takt = Dauer der Fortschrittsleiste oben
 setInterval(rotateBatch, BATCH_INTERVAL_MS); // alle 10 Min. neue, noch nicht gezeigte Ziele
 setInterval(loadDeals, 15 * 60 * 1000); // alle 15 Min. auf neue Live-Daten prüfen
 </script>
