@@ -223,6 +223,63 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0d2e46;}
   font-family:'Bebas Neue',sans-serif;
   font-size:52px;color:var(--gold);
 }
+
+/* ═══════════════ MOBILE (≤860px) ═══════════════
+   Wie beim News-Widget: auf schmalen Bildschirmen wird NICHT die feste
+   1920×1080-Bühne verkleinert, sondern auf einen echten, mitwachsenden
+   Block-Fluss umgeschaltet — Heute-Panel oben, die zwei Vorschau-Karten
+   darunter nebeneinander. Das Desktop-/Xibo-Layout oben bleibt dabei
+   komplett unverändert. */
+@media (max-width:860px){
+  html,body{ height:auto; min-height:100%; overflow-y:auto; overflow-x:hidden; }
+  #app{
+    width:100%; height:auto; min-height:100vh;
+    display:block;
+    transform:none !important;
+  }
+  .header{ padding:18px 20px; }
+  .header-title{ font-size:26px; letter-spacing:1.5px; }
+  .header-logo{ height:44px; }
+  .header::after{ left:20px; right:20px; }
+
+  .main{ display:block; }
+
+  .heute-panel{
+    border-right:none; border-bottom:1px solid var(--border);
+    padding:26px 20px 30px;
+  }
+  .heute-label{ font-size:24px; letter-spacing:2px; margin-bottom:4px; }
+  .heute-date{ font-size:14px; margin-bottom:14px; }
+  .heute-icon{ width:110px; height:110px; margin:4px 0; }
+  .heute-temp{ font-size:58px; }
+  .heute-temp sup{ font-size:24px; margin-top:8px; }
+  .heute-desc{ font-size:15px; margin-top:4px; }
+  .heute-details{ gap:12px; margin-top:14px; padding:10px 14px; }
+  .detail-label{ font-size:9.5px; letter-spacing:1px; }
+  .detail-val{ font-size:15px; }
+  .update-time{ position:relative; bottom:auto; margin-top:16px; }
+
+  .forecast-panel{ grid-template-columns:1fr 1fr; }
+  .forecast-card{ padding:22px 14px; }
+  .fc-day{ font-size:22px; letter-spacing:2px; margin-bottom:4px; }
+  .fc-date{ font-size:12.5px; margin-bottom:12px; }
+  .fc-icon{ width:80px; height:80px; margin:4px 0; }
+  .fc-desc{ font-size:12.5px; margin:8px 0 6px; min-height:auto; }
+  .fc-temps{ gap:8px; margin-top:4px; }
+  .fc-max{ font-size:38px; }
+  .fc-max sup{ font-size:16px; margin-top:6px; }
+  .fc-min{ font-size:22px; }
+  .fc-min sup{ font-size:12px; margin-top:4px; }
+  .fc-divider{ height:32px; }
+
+  .footer-bar{
+    position:relative; height:auto;
+    padding:10px 16px; flex-direction:column; align-items:flex-start; gap:4px;
+  }
+  .footer-dsgvo, .footer-source{ font-size:9.5px; }
+
+  #error-overlay{ position:fixed; top:0; height:100%; }
+}
 </style>
 </head>
 <body>
